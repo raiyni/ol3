@@ -16,9 +16,10 @@ goog.require('ol.source.State');
  * A generic `change` event is triggered when the state of the source changes.
  *
  * @constructor
+ * @abstract
  * @extends {ol.Object}
  * @param {ol.SourceSourceOptions} options Source options.
- * @api stable
+ * @api
  */
 ol.source.Source = function(options) {
 
@@ -47,7 +48,7 @@ ol.source.Source = function(options) {
    * @type {ol.source.State}
    */
   this.state_ = options.state !== undefined ?
-      options.state : ol.source.State.READY;
+    options.state : ol.source.State.READY;
 
   /**
    * @private
@@ -107,7 +108,7 @@ ol.source.Source.prototype.forEachFeatureAtCoordinate = ol.nullFunction;
 /**
  * Get the attributions of the source.
  * @return {Array.<ol.Attribution>} Attributions.
- * @api stable
+ * @api
  */
 ol.source.Source.prototype.getAttributions = function() {
   return this.attributions_;
@@ -117,7 +118,7 @@ ol.source.Source.prototype.getAttributions = function() {
 /**
  * Get the logo of the source.
  * @return {string|olx.LogoOptions|undefined} Logo.
- * @api stable
+ * @api
  */
 ol.source.Source.prototype.getLogo = function() {
   return this.logo_;

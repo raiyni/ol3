@@ -217,7 +217,7 @@ describe('ol.interaction.Modify', function() {
     it('deletes first vertex of a LineString', function() {
       var lineFeature = new ol.Feature({
         geometry: new ol.geom.LineString(
-          [[0, 0], [10, 20], [0, 40], [40, 40], [40, 0]]
+            [[0, 0], [10, 20], [0, 40], [40, 40], [40, 0]]
         )
       });
       features.length = 0;
@@ -253,7 +253,7 @@ describe('ol.interaction.Modify', function() {
     it('deletes last vertex of a LineString', function() {
       var lineFeature = new ol.Feature({
         geometry: new ol.geom.LineString(
-          [[0, 0], [10, 20], [0, 40], [40, 40], [40, 0]]
+            [[0, 0], [10, 20], [0, 40], [40, 40], [40, 0]]
         )
       });
       features.length = 0;
@@ -289,7 +289,7 @@ describe('ol.interaction.Modify', function() {
     it('deletes vertex of a LineString programmatically', function() {
       var lineFeature = new ol.Feature({
         geometry: new ol.geom.LineString(
-          [[0, 0], [10, 20], [0, 40], [40, 40], [40, 0]]
+            [[0, 0], [10, 20], [0, 40], [40, 40], [40, 0]]
         )
       });
       features.length = 0;
@@ -331,7 +331,7 @@ describe('ol.interaction.Modify', function() {
     it('keeps the third dimension', function() {
       var lineFeature = new ol.Feature({
         geometry: new ol.geom.LineString(
-          [[0, 0, 10], [10, 20, 20], [0, 40, 30], [40, 40, 40], [40, 0, 50]]
+            [[0, 0, 10], [10, 20, 20], [0, 40, 30], [40, 40, 40], [40, 0, 50]]
         )
       });
       features.length = 0;
@@ -368,6 +368,39 @@ describe('ol.interaction.Modify', function() {
       expect(lineFeature.getGeometry().getCoordinates()[4][2]).to.equal(50);
     });
 
+  });
+
+  describe('circle modification', function() {
+    it('changes the circle radius and center', function() {
+      var circleFeature = new ol.Feature(new ol.geom.Circle([10, 10], 20));
+      features.length = 0;
+      features.push(circleFeature);
+
+      var modify = new ol.interaction.Modify({
+        features: new ol.Collection(features)
+      });
+      map.addInteraction(modify);
+
+      // Change center
+      simulateEvent('pointermove', 10, -10, false, 0);
+      simulateEvent('pointerdown', 10, -10, false, 0);
+      simulateEvent('pointermove', 5, -5, false, 0);
+      simulateEvent('pointerdrag', 5, -5, false, 0);
+      simulateEvent('pointerup', 5, -5, false, 0);
+
+      expect(circleFeature.getGeometry().getRadius()).to.equal(20);
+      expect(circleFeature.getGeometry().getCenter()).to.eql([5, 5]);
+
+      // Increase radius
+      simulateEvent('pointermove', 25, -4, false, 0);
+      simulateEvent('pointerdown', 25, -4, false, 0);
+      simulateEvent('pointermove', 30, -5, false, 0);
+      simulateEvent('pointerdrag', 30, -5, false, 0);
+      simulateEvent('pointerup', 30, -5, false, 0);
+
+      expect(circleFeature.getGeometry().getRadius()).to.equal(25);
+      expect(circleFeature.getGeometry().getCenter()).to.eql([5, 5]);
+    });
   });
 
   describe('boundary modification', function() {
@@ -526,6 +559,40 @@ describe('ol.interaction.Modify', function() {
     });
   });
 
+  describe('insertVertexCondition', function() {
+    it('calls the callback function', function() {
+      var listenerSpy = sinon.spy(function(event) {
+        return false;
+      });
+
+      var modify = new ol.interaction.Modify({
+        features: new ol.Collection(features),
+        insertVertexCondition: listenerSpy
+      });
+      map.addInteraction(modify);
+      var feature = features[0];
+
+      // move first vertex
+      simulateEvent('pointermove', 0, 0, false, 0);
+      simulateEvent('pointerdown', 0, 0, false, 0);
+      simulateEvent('pointermove', -10, -10, false, 0);
+      simulateEvent('pointerdrag', -10, -10, false, 0);
+      simulateEvent('pointerup', -10, -10, false, 0);
+
+      expect(listenerSpy.callCount).to.be(0);
+      expect(feature.getGeometry().getCoordinates()[0]).to.have.length(5);
+
+      // try to add vertex
+      simulateEvent('pointerdown', 40, -20, false, 0);
+      simulateEvent('pointerup', 40, -20, false, 0);
+      simulateEvent('click', 40, -20, false, 0);
+      simulateEvent('singleclick', 40, -20, false, 0);
+
+      expect(listenerSpy.callCount).to.be(1);
+      expect(feature.getGeometry().getCoordinates()[0]).to.have.length(5);
+    });
+  });
+
   describe('handle feature change', function() {
     var getListeners;
 
@@ -539,7 +606,47 @@ describe('ol.interaction.Modify', function() {
       };
     });
 
-    it('updates the segment data', function() {
+    it('updates circle segment data', function() {
+      var feature = new ol.Feature(new ol.geom.Circle([10, 10], 20));
+      features.length = 0;
+      features.push(feature);
+
+      var modify = new ol.interaction.Modify({
+        features: new ol.Collection(features)
+      });
+      map.addInteraction(modify);
+
+      var listeners;
+
+      listeners = getListeners(feature, modify);
+      expect(listeners).to.have.length(1);
+
+      var firstSegmentData;
+
+      firstSegmentData = modify.rBush_.forEachInExtent([0, 0, 5, 5],
+          function(node) {
+            return node;
+          });
+      expect(firstSegmentData.segment[0]).to.eql([10, 10]);
+      expect(firstSegmentData.segment[1]).to.eql([10, 10]);
+
+      var center = feature.getGeometry().getCenter();
+      center[0] = 1;
+      center[1] = 1;
+      feature.getGeometry().setCenter(center);
+
+      firstSegmentData = modify.rBush_.forEachInExtent([0, 0, 5, 5],
+          function(node) {
+            return node;
+          });
+      expect(firstSegmentData.segment[0]).to.eql([1, 1]);
+      expect(firstSegmentData.segment[1]).to.eql([1, 1]);
+
+      listeners = getListeners(feature, modify);
+      expect(listeners).to.have.length(1);
+    });
+
+    it('updates polygon segment data', function() {
       var modify = new ol.interaction.Modify({
         features: new ol.Collection(features)
       });

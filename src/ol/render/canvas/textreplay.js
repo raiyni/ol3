@@ -160,6 +160,7 @@ ol.render.canvas.TextReplay.prototype.setReplayStrokeState_ = function(strokeSta
   if (replayStrokeState &&
       replayStrokeState.lineCap == strokeState.lineCap &&
       replayStrokeState.lineDash == strokeState.lineDash &&
+      replayStrokeState.lineDashOffset == strokeState.lineDashOffset &&
       replayStrokeState.lineJoin == strokeState.lineJoin &&
       replayStrokeState.lineWidth == strokeState.lineWidth &&
       replayStrokeState.miterLimit == strokeState.miterLimit &&
@@ -169,7 +170,7 @@ ol.render.canvas.TextReplay.prototype.setReplayStrokeState_ = function(strokeSta
   var setStrokeStyleInstruction = [
     ol.render.canvas.Instruction.SET_STROKE_STYLE, strokeState.strokeStyle,
     strokeState.lineWidth, strokeState.lineCap, strokeState.lineJoin,
-    strokeState.miterLimit, strokeState.lineDash, false, 1
+    strokeState.miterLimit, strokeState.lineDash, strokeState.lineDashOffset, false, 1
   ];
   this.instructions.push(setStrokeStyleInstruction);
   this.hitDetectionInstructions.push(setStrokeStyleInstruction);
@@ -177,6 +178,7 @@ ol.render.canvas.TextReplay.prototype.setReplayStrokeState_ = function(strokeSta
     this.replayStrokeState_ = {
       lineCap: strokeState.lineCap,
       lineDash: strokeState.lineDash,
+      lineDashOffset: strokeState.lineDashOffset,
       lineJoin: strokeState.lineJoin,
       lineWidth: strokeState.lineWidth,
       miterLimit: strokeState.miterLimit,
@@ -185,6 +187,7 @@ ol.render.canvas.TextReplay.prototype.setReplayStrokeState_ = function(strokeSta
   } else {
     replayStrokeState.lineCap = strokeState.lineCap;
     replayStrokeState.lineDash = strokeState.lineDash;
+    replayStrokeState.lineDashOffset = strokeState.lineDashOffset;
     replayStrokeState.lineJoin = strokeState.lineJoin;
     replayStrokeState.lineWidth = strokeState.lineWidth;
     replayStrokeState.miterLimit = strokeState.miterLimit;
@@ -236,7 +239,7 @@ ol.render.canvas.TextReplay.prototype.setTextStyle = function(textStyle) {
     } else {
       var textFillStyleColor = textFillStyle.getColor();
       var fillStyle = ol.colorlike.asColorLike(textFillStyleColor ?
-          textFillStyleColor : ol.render.canvas.defaultFillStyle);
+        textFillStyleColor : ol.render.canvas.defaultFillStyle);
       if (!this.textFillState_) {
         this.textFillState_ = {
           fillStyle: fillStyle
@@ -253,25 +256,29 @@ ol.render.canvas.TextReplay.prototype.setTextStyle = function(textStyle) {
       var textStrokeStyleColor = textStrokeStyle.getColor();
       var textStrokeStyleLineCap = textStrokeStyle.getLineCap();
       var textStrokeStyleLineDash = textStrokeStyle.getLineDash();
+      var textStrokeStyleLineDashOffset = textStrokeStyle.getLineDashOffset();
       var textStrokeStyleLineJoin = textStrokeStyle.getLineJoin();
       var textStrokeStyleWidth = textStrokeStyle.getWidth();
       var textStrokeStyleMiterLimit = textStrokeStyle.getMiterLimit();
       var lineCap = textStrokeStyleLineCap !== undefined ?
-          textStrokeStyleLineCap : ol.render.canvas.defaultLineCap;
+        textStrokeStyleLineCap : ol.render.canvas.defaultLineCap;
       var lineDash = textStrokeStyleLineDash ?
-          textStrokeStyleLineDash.slice() : ol.render.canvas.defaultLineDash;
+        textStrokeStyleLineDash.slice() : ol.render.canvas.defaultLineDash;
+      var lineDashOffset = textStrokeStyleLineDashOffset !== undefined ?
+        textStrokeStyleLineDashOffset : ol.render.canvas.defaultLineDashOffset;
       var lineJoin = textStrokeStyleLineJoin !== undefined ?
-          textStrokeStyleLineJoin : ol.render.canvas.defaultLineJoin;
+        textStrokeStyleLineJoin : ol.render.canvas.defaultLineJoin;
       var lineWidth = textStrokeStyleWidth !== undefined ?
-          textStrokeStyleWidth : ol.render.canvas.defaultLineWidth;
+        textStrokeStyleWidth : ol.render.canvas.defaultLineWidth;
       var miterLimit = textStrokeStyleMiterLimit !== undefined ?
-          textStrokeStyleMiterLimit : ol.render.canvas.defaultMiterLimit;
+        textStrokeStyleMiterLimit : ol.render.canvas.defaultMiterLimit;
       var strokeStyle = ol.colorlike.asColorLike(textStrokeStyleColor ?
-          textStrokeStyleColor : ol.render.canvas.defaultStrokeStyle);
+        textStrokeStyleColor : ol.render.canvas.defaultStrokeStyle);
       if (!this.textStrokeState_) {
         this.textStrokeState_ = {
           lineCap: lineCap,
           lineDash: lineDash,
+          lineDashOffset: lineDashOffset,
           lineJoin: lineJoin,
           lineWidth: lineWidth,
           miterLimit: miterLimit,
@@ -281,6 +288,7 @@ ol.render.canvas.TextReplay.prototype.setTextStyle = function(textStyle) {
         var textStrokeState = this.textStrokeState_;
         textStrokeState.lineCap = lineCap;
         textStrokeState.lineDash = lineDash;
+        textStrokeState.lineDashOffset = lineDashOffset;
         textStrokeState.lineJoin = lineJoin;
         textStrokeState.lineWidth = lineWidth;
         textStrokeState.miterLimit = miterLimit;
@@ -297,11 +305,11 @@ ol.render.canvas.TextReplay.prototype.setTextStyle = function(textStyle) {
     var textTextAlign = textStyle.getTextAlign();
     var textTextBaseline = textStyle.getTextBaseline();
     var font = textFont !== undefined ?
-        textFont : ol.render.canvas.defaultFont;
+      textFont : ol.render.canvas.defaultFont;
     var textAlign = textTextAlign !== undefined ?
-        textTextAlign : ol.render.canvas.defaultTextAlign;
+      textTextAlign : ol.render.canvas.defaultTextAlign;
     var textBaseline = textTextBaseline !== undefined ?
-        textTextBaseline : ol.render.canvas.defaultTextBaseline;
+      textTextBaseline : ol.render.canvas.defaultTextBaseline;
     if (!this.textState_) {
       this.textState_ = {
         font: font,

@@ -12,7 +12,7 @@ goog.require('ol.source.XYZ');
  * @constructor
  * @extends {ol.source.XYZ}
  * @param {olx.source.OSMOptions=} opt_options Open Street Map options.
- * @api stable
+ * @api
  */
 ol.source.OSM = function(opt_options) {
 
@@ -26,10 +26,10 @@ ol.source.OSM = function(opt_options) {
   }
 
   var crossOrigin = options.crossOrigin !== undefined ?
-      options.crossOrigin : 'anonymous';
+    options.crossOrigin : 'anonymous';
 
   var url = options.url !== undefined ?
-      options.url : 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+    options.url : 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 
   ol.source.XYZ.call(this, {
     attributions: attributions,

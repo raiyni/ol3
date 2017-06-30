@@ -72,8 +72,8 @@ describe('ol.rendering.style.LineString', function() {
       feature.setStyle([new ol.style.Style({
         stroke: new ol.style.Stroke({color: '#F2F211', width: 5})
       }), new ol.style.Style({
-        stroke: new ol.style.Stroke({color: '#292921', width: 1})
-      })]);
+          stroke: new ol.style.Stroke({color: '#292921', width: 1})
+        })]);
       vectorSource.addFeature(feature);
 
       feature = new ol.Feature({
@@ -87,6 +87,23 @@ describe('ol.rendering.style.LineString', function() {
           width: 2,
           lineCap: 'square',
           lineDash: [4, 8],
+          lineJoin: 'round'
+        })
+      }));
+      vectorSource.addFeature(feature);
+
+      feature = new ol.Feature({
+        geometry: new ol.geom.LineString(
+            [[-20, -15], [-2, 5], [15, -15]]
+        )
+      });
+      feature.setStyle(new ol.style.Style({
+        stroke: new ol.style.Stroke({
+          color: '#000000',
+          width: 2,
+          lineCap: 'square',
+          lineDash: [4, 8],
+          lineDashOffset: 6,
           lineJoin: 'round'
         })
       }));

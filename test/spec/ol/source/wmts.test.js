@@ -23,6 +23,24 @@ describe('ol.source.WMTS', function() {
       });
     });
 
+    it('returns null if the layer was not found in the capabilities', function() {
+      var options = ol.source.WMTS.optionsFromCapabilities(capabilities, {
+        layer: 'invalid'
+      });
+
+      expect(options).to.be(null);
+    });
+
+    it('passes the crossOrigin option', function() {
+      var options = ol.source.WMTS.optionsFromCapabilities(capabilities, {
+        layer: 'BlueMarbleNextGeneration',
+        matrixSet: 'google3857',
+        crossOrigin: ''
+      });
+
+      expect(options.crossOrigin).to.be.eql('');
+    });
+
     it('can create KVP options from spec/ol/format/wmts/ogcsample.xml',
         function() {
           var options = ol.source.WMTS.optionsFromCapabilities(
@@ -50,6 +68,8 @@ describe('ol.source.WMTS', function() {
           expect(options.style).to.be.eql('DarkBlue');
 
           expect(options.dimensions).to.eql({Time: '20110805'});
+
+          expect(options.crossOrigin).to.be(undefined);
 
         });
 
@@ -188,7 +208,7 @@ describe('ol.source.WMTS', function() {
           expect(options.urls).to.be.an('array');
           expect(options.urls).to.have.length(1);
           expect(options.urls[0]).to.be.eql(
-             'https://services.arcgisonline.com/arcgis/rest/services/' +
+              'https://services.arcgisonline.com/arcgis/rest/services/' +
              'Demographics/USA_Population_Density/MapServer/WMTS?');
         });
 
@@ -203,7 +223,7 @@ describe('ol.source.WMTS', function() {
           expect(options.urls).to.be.an('array');
           expect(options.urls).to.have.length(1);
           expect(options.urls[0]).to.be.eql(
-             'https://services.arcgisonline.com/arcgis/rest/services/' +
+              'https://services.arcgisonline.com/arcgis/rest/services/' +
              'Demographics/USA_Population_Density/MapServer/WMTS/' +
              'tile/1.0.0/Demographics_USA_Population_Density/' +
              '{Style}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png');

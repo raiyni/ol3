@@ -1,8 +1,8 @@
 goog.provide('ol.format.filter');
 
-goog.require('ol');
 goog.require('ol.format.filter.And');
 goog.require('ol.format.filter.Bbox');
+goog.require('ol.format.filter.During');
 goog.require('ol.format.filter.EqualTo');
 goog.require('ol.format.filter.GreaterThan');
 goog.require('ol.format.filter.GreaterThanOrEqualTo');
@@ -19,28 +19,28 @@ goog.require('ol.format.filter.Within');
 
 
 /**
- * Create a logical `<And>` operator between two filter conditions.
+ * Create a logical `<And>` operator between two or more filter conditions.
  *
- * @param {!ol.format.filter.Filter} conditionA First filter condition.
- * @param {!ol.format.filter.Filter} conditionB Second filter condition.
+ * @param {...ol.format.filter.Filter} conditions Filter conditions.
  * @returns {!ol.format.filter.And} `<And>` operator.
  * @api
  */
-ol.format.filter.and = function(conditionA, conditionB) {
-  return new ol.format.filter.And(conditionA, conditionB);
+ol.format.filter.and = function(conditions) {
+  var params = [null].concat(Array.prototype.slice.call(arguments));
+  return new (Function.prototype.bind.apply(ol.format.filter.And, params));
 };
 
 
 /**
- * Create a logical `<Or>` operator between two filter conditions.
+ * Create a logical `<Or>` operator between two or more filter conditions.
  *
- * @param {!ol.format.filter.Filter} conditionA First filter condition.
- * @param {!ol.format.filter.Filter} conditionB Second filter condition.
+ * @param {...ol.format.filter.Filter} conditions Filter conditions.
  * @returns {!ol.format.filter.Or} `<Or>` operator.
  * @api
  */
-ol.format.filter.or = function(conditionA, conditionB) {
-  return new ol.format.filter.Or(conditionA, conditionB);
+ol.format.filter.or = function(conditions) {
+  var params = [null].concat(Array.prototype.slice.call(arguments));
+  return new (Function.prototype.bind.apply(ol.format.filter.Or, params));
 };
 
 
@@ -229,5 +229,19 @@ ol.format.filter.between = function(propertyName, lowerBoundary, upperBoundary) 
 ol.format.filter.like = function(propertyName, pattern,
     opt_wildCard, opt_singleChar, opt_escapeChar, opt_matchCase) {
   return new ol.format.filter.IsLike(propertyName, pattern,
-    opt_wildCard, opt_singleChar, opt_escapeChar, opt_matchCase);
+      opt_wildCard, opt_singleChar, opt_escapeChar, opt_matchCase);
+};
+
+
+/**
+ * Create a `<During>` temporal operator.
+ *
+ * @param {!string} propertyName Name of the context property to compare.
+ * @param {!string} begin The begin date in ISO-8601 format.
+ * @param {!string} end The end date in ISO-8601 format.
+ * @returns {!ol.format.filter.During} `<During>` operator.
+ * @api
+ */
+ol.format.filter.during = function(propertyName, begin, end) {
+  return new ol.format.filter.During(propertyName, begin, end);
 };

@@ -166,7 +166,7 @@ var moveFeature = function(event) {
     var feature = new ol.Feature(currentPoint);
     vectorContext.drawFeature(feature, styles.geoMarker);
   }
-  // tell OL3 to continue the postcompose animation
+  // tell OpenLayers to continue the postcompose animation
   map.render();
 };
 
@@ -198,7 +198,7 @@ function stopAnimation(ended) {
   // if animation cancelled set the marker at the beginning
   var coord = ended ? routeCoords[routeLength - 1] : routeCoords[0];
   /** @type {ol.geom.Point} */ (geoMarker.getGeometry())
-    .setCoordinates(coord);
+      .setCoordinates(coord);
   //remove listener
   map.un('postcompose', moveFeature);
 }

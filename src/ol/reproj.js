@@ -1,34 +1,9 @@
 goog.provide('ol.reproj');
 
-goog.require('ol');
 goog.require('ol.dom');
 goog.require('ol.extent');
 goog.require('ol.math');
 goog.require('ol.proj');
-
-
-/**
- * We need to employ more sophisticated solution
- * if the web browser antialiases clipping edges on canvas.
- *
- * Currently only Chrome does not antialias the edges, but this is probably
- * going to be "fixed" in the future: http://crbug.com/424291
- *
- * @type {boolean}
- * @private
- */
-ol.reproj.browserAntialiasesClip_ = (function() {
-  // Adapted from http://stackoverflow.com/questions/4565112/javascript-how-to-find-out-if-the-user-browser-is-chrome
-  var isOpera = navigator.userAgent.indexOf('OPR') > -1;
-  var isIEedge = navigator.userAgent.indexOf('Edge') > -1;
-  return !(
-    !navigator.userAgent.match('CriOS') &&  // Not Chrome on iOS
-    'chrome' in window && // Has chrome in window
-    navigator.vendor === 'Google Inc.' && // Vendor is Google.
-    isOpera == false && // Not Opera
-    isIEedge == false // Not Edge
-  );
-})();
 
 
 /**
@@ -65,12 +40,14 @@ ol.reproj.calculateSourceResolution = function(sourceProj, targetProj,
   // coordinates may be slightly different. We need to reverse-compensate this
   // in order to achieve optimal results.
 
-  var compensationFactor =
-      ol.proj.getPointResolution(sourceProj, sourceResolution, sourceCenter) /
-      sourceResolution;
-
-  if (isFinite(compensationFactor) && compensationFactor > 0) {
-    sourceResolution /= compensationFactor;
+  var sourceExtent = sourceProj.getExtent();
+  if (!sourceExtent || ol.extent.containsCoordinate(sourceExtent, sourceCenter)) {
+    var compensationFactor =
+        ol.proj.getPointResolution(sourceProj, sourceResolution, sourceCenter) /
+        sourceResolution;
+    if (isFinite(compensationFactor) && compensationFactor > 0) {
+      sourceResolution /= compensationFactor;
+    }
   }
 
   return sourceResolution;
@@ -118,7 +95,7 @@ ol.reproj.render = function(width, height, pixelRatio,
     triangulation, sources, gutter, opt_renderEdges) {
 
   var context = ol.dom.createCanvasContext2D(Math.round(pixelRatio * width),
-                                             Math.round(pixelRatio * height));
+      Math.round(pixelRatio * height));
 
   if (sources.length === 0) {
     return context.canvas;
@@ -211,30 +188,24 @@ ol.reproj.render = function(width, height, pixelRatio,
 
     context.save();
     context.beginPath();
-    if (ol.reproj.browserAntialiasesClip_) {
-      var centroidX = (u0 + u1 + u2) / 3, centroidY = (v0 + v1 + v2) / 3;
-      var p0 = ol.reproj.enlargeClipPoint_(centroidX, centroidY, u0, v0);
-      var p1 = ol.reproj.enlargeClipPoint_(centroidX, centroidY, u1, v1);
-      var p2 = ol.reproj.enlargeClipPoint_(centroidX, centroidY, u2, v2);
+    var centroidX = (u0 + u1 + u2) / 3, centroidY = (v0 + v1 + v2) / 3;
+    var p0 = ol.reproj.enlargeClipPoint_(centroidX, centroidY, u0, v0);
+    var p1 = ol.reproj.enlargeClipPoint_(centroidX, centroidY, u1, v1);
+    var p2 = ol.reproj.enlargeClipPoint_(centroidX, centroidY, u2, v2);
 
-      context.moveTo(p1[0], p1[1]);
-      context.lineTo(p0[0], p0[1]);
-      context.lineTo(p2[0], p2[1]);
-    } else {
-      context.moveTo(u1, v1);
-      context.lineTo(u0, v0);
-      context.lineTo(u2, v2);
-    }
+    context.moveTo(p1[0], p1[1]);
+    context.lineTo(p0[0], p0[1]);
+    context.lineTo(p2[0], p2[1]);
     context.clip();
 
     context.transform(
         affineCoefs[0], affineCoefs[2], affineCoefs[1], affineCoefs[3], u0, v0);
 
     context.translate(sourceDataExtent[0] - sourceNumericalShiftX,
-                      sourceDataExtent[3] - sourceNumericalShiftY);
+        sourceDataExtent[3] - sourceNumericalShiftY);
 
     context.scale(sourceResolution / pixelRatio,
-                  -sourceResolution / pixelRatio);
+        -sourceResolution / pixelRatio);
 
     context.drawImage(stitchContext.canvas, 0, 0);
     context.restore();

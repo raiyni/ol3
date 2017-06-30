@@ -32,8 +32,8 @@ describe('ol.interaction.Translate', function() {
     features = [new ol.Feature({
       geometry: new ol.geom.Point([10, -20])
     }), new ol.Feature({
-      geometry: new ol.geom.Point([20, -30])
-    })];
+        geometry: new ol.geom.Point([20, -30])
+      })];
     source.addFeatures(features);
     var layer = new ol.layer.Vector({source: source});
     map = new ol.Map({
@@ -56,13 +56,13 @@ describe('ol.interaction.Translate', function() {
   });
 
   /**
-     * Simulates a browser event on the map viewport.  The client x/y location
-     * will be adjusted as if the map were centered at 0,0.
-     * @param {string} type Event type.
-     * @param {number} x Horizontal offset from map center.
-     * @param {number} y Vertical offset from map center.
-     * @param {boolean=} opt_shiftKey Shift key is pressed.
-     */
+   * Simulates a browser event on the map viewport.  The client x/y location
+   * will be adjusted as if the map were centered at 0,0.
+   * @param {string} type Event type.
+   * @param {number} x Horizontal offset from map center.
+   * @param {number} y Vertical offset from map center.
+   * @param {boolean=} opt_shiftKey Shift key is pressed.
+   */
   function simulateEvent(type, x, y, opt_shiftKey) {
     var viewport = map.getViewport();
     // calculated in case body has top < 0 (test runner with small window)
@@ -99,12 +99,12 @@ describe('ol.interaction.Translate', function() {
   }
 
   /**
-  * Validates the event array to verify proper event sequence. Checks
-  * that first and last event are correct TranslateEvents and that feature
-  * modifications event are in between.
-  * @param {Array<ol.interaction.Translate.Event|string>} events The events.
-  * @param {Array<ol.Feature>} features The features.
-  */
+   * Validates the event array to verify proper event sequence. Checks
+   * that first and last event are correct TranslateEvents and that feature
+   * modifications event are in between.
+   * @param {Array<ol.interaction.Translate.Event|string>} events The events.
+   * @param {Array<ol.Feature>} features The features.
+   */
   function validateEvents(events, features) {
 
     var startevent = events[0];
@@ -139,6 +139,19 @@ describe('ol.interaction.Translate', function() {
       });
       expect(translate).to.be.a(ol.interaction.Translate);
       expect(translate).to.be.a(ol.interaction.Interaction);
+    });
+
+  });
+
+  describe('setActive', function() {
+
+    it('works when the map is not set', function() {
+      var translate = new ol.interaction.Translate({
+        features: features
+      });
+      expect(translate.getActive()).to.be(true);
+      translate.setActive(false);
+      expect(translate.getActive()).to.be(false);
     });
 
   });
@@ -203,4 +216,75 @@ describe('ol.interaction.Translate', function() {
       validateEvents(events, [features[0]]);
     });
   });
+
+  describe('changes css cursor', function() {
+    var element, translate;
+
+    beforeEach(function() {
+      translate = new ol.interaction.Translate();
+      map.addInteraction(translate);
+      element = map.getViewport();
+    });
+
+    it('changes css cursor', function() {
+      expect(element.classList.contains('ol-grabbing')).to.be(false);
+      expect(element.classList.contains('ol-grab')).to.be(false);
+
+      simulateEvent('pointermove', 10, 20);
+      expect(element.classList.contains('ol-grabbing')).to.be(false);
+      expect(element.classList.contains('ol-grab')).to.be(true);
+
+      simulateEvent('pointerdown', 10, 20);
+      expect(element.classList.contains('ol-grabbing')).to.be(true);
+      expect(element.classList.contains('ol-grab')).to.be(false);
+
+      simulateEvent('pointerup', 10, 20);
+      expect(element.classList.contains('ol-grabbing')).to.be(false);
+      expect(element.classList.contains('ol-grab')).to.be(true);
+
+      simulateEvent('pointermove', 0, 0);
+      expect(element.classList.contains('ol-grabbing')).to.be(false);
+      expect(element.classList.contains('ol-grab')).to.be(false);
+    });
+
+    it('resets css cursor when interaction is deactivated while pointer is on feature', function() {
+      simulateEvent('pointermove', 10, 20);
+      expect(element.classList.contains('ol-grabbing')).to.be(false);
+      expect(element.classList.contains('ol-grab')).to.be(true);
+
+      translate.setActive(false);
+
+      simulateEvent('pointermove', 0, 0);
+      expect(element.classList.contains('ol-grabbing')).to.be(false);
+      expect(element.classList.contains('ol-grab')).to.be(false);
+    });
+
+    it('resets css cursor interaction is removed while pointer is on feature', function() {
+      simulateEvent('pointermove', 10, 20);
+      expect(element.classList.contains('ol-grabbing')).to.be(false);
+      expect(element.classList.contains('ol-grab')).to.be(true);
+
+      map.removeInteraction(translate);
+
+      simulateEvent('pointermove', 0, 0);
+      expect(element.classList.contains('ol-grabbing')).to.be(false);
+      expect(element.classList.contains('ol-grab')).to.be(false);
+    });
+
+    it('resets css cursor to existing cursor interaction is removed while pointer is on feature', function() {
+      element.style.cursor = 'pointer';
+
+      simulateEvent('pointermove', 10, 20);
+      expect(element.classList.contains('ol-grabbing')).to.be(false);
+      expect(element.classList.contains('ol-grab')).to.be(true);
+
+      map.removeInteraction(translate);
+
+      simulateEvent('pointermove', 0, 0);
+      expect(element.classList.contains('ol-grabbing')).to.be(false);
+      expect(element.classList.contains('ol-grab')).to.be(false);
+    });
+
+  });
+
 });

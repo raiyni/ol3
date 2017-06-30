@@ -1,6 +1,5 @@
 goog.provide('ol.interaction');
 
-goog.require('ol');
 goog.require('ol.Collection');
 goog.require('ol.Kinetic');
 goog.require('ol.interaction.DoubleClickZoom');
@@ -35,7 +34,7 @@ goog.require('ol.interaction.PinchZoom');
  * @param {olx.interaction.DefaultsOptions=} opt_options Defaults options.
  * @return {ol.Collection.<ol.interaction.Interaction>} A collection of
  * interactions to be used with the ol.Map constructor's interactions option.
- * @api stable
+ * @api
  */
 ol.interaction.defaults = function(opt_options) {
 
@@ -46,13 +45,13 @@ ol.interaction.defaults = function(opt_options) {
   var kinetic = new ol.Kinetic(-0.005, 0.05, 100);
 
   var altShiftDragRotate = options.altShiftDragRotate !== undefined ?
-      options.altShiftDragRotate : true;
+    options.altShiftDragRotate : true;
   if (altShiftDragRotate) {
     interactions.push(new ol.interaction.DragRotate());
   }
 
   var doubleClickZoom = options.doubleClickZoom !== undefined ?
-      options.doubleClickZoom : true;
+    options.doubleClickZoom : true;
   if (doubleClickZoom) {
     interactions.push(new ol.interaction.DoubleClickZoom({
       delta: options.zoomDelta,
@@ -68,7 +67,7 @@ ol.interaction.defaults = function(opt_options) {
   }
 
   var pinchRotate = options.pinchRotate !== undefined ? options.pinchRotate :
-      true;
+    true;
   if (pinchRotate) {
     interactions.push(new ol.interaction.PinchRotate());
   }
@@ -76,6 +75,7 @@ ol.interaction.defaults = function(opt_options) {
   var pinchZoom = options.pinchZoom !== undefined ? options.pinchZoom : true;
   if (pinchZoom) {
     interactions.push(new ol.interaction.PinchZoom({
+      constrainResolution: options.constrainResolution,
       duration: options.zoomDuration
     }));
   }
@@ -90,15 +90,16 @@ ol.interaction.defaults = function(opt_options) {
   }
 
   var mouseWheelZoom = options.mouseWheelZoom !== undefined ?
-      options.mouseWheelZoom : true;
+    options.mouseWheelZoom : true;
   if (mouseWheelZoom) {
     interactions.push(new ol.interaction.MouseWheelZoom({
+      constrainResolution: options.constrainResolution,
       duration: options.zoomDuration
     }));
   }
 
   var shiftDragZoom = options.shiftDragZoom !== undefined ?
-      options.shiftDragZoom : true;
+    options.shiftDragZoom : true;
   if (shiftDragZoom) {
     interactions.push(new ol.interaction.DragZoom({
       duration: options.zoomDuration

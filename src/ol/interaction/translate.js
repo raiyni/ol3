@@ -2,10 +2,14 @@ goog.provide('ol.interaction.Translate');
 
 goog.require('ol');
 goog.require('ol.Collection');
+goog.require('ol.Object');
+goog.require('ol.events');
 goog.require('ol.events.Event');
 goog.require('ol.functions');
 goog.require('ol.array');
 goog.require('ol.interaction.Pointer');
+goog.require('ol.interaction.Property');
+goog.require('ol.interaction.TranslateEventType');
 
 
 /**
@@ -27,13 +31,6 @@ ol.interaction.Translate = function(opt_options) {
   });
 
   var options = opt_options ? opt_options : {};
-
-  /**
-   * @type {string|undefined}
-   * @private
-   */
-  this.previousCursor_ = undefined;
-
 
   /**
    * The last position we translated to.
@@ -81,6 +78,11 @@ ol.interaction.Translate = function(opt_options) {
    * @private
    */
   this.lastFeature_ = null;
+
+  ol.events.listen(this,
+      ol.Object.getChangeEventType(ol.interaction.Property.ACTIVE),
+      this.handleActiveChanged_, this);
+
 };
 ol.inherits(ol.interaction.Translate, ol.interaction.Pointer);
 
@@ -101,7 +103,7 @@ ol.interaction.Translate.handleDownEvent_ = function(event) {
 
     this.dispatchEvent(
         new ol.interaction.Translate.Event(
-            ol.interaction.Translate.EventType.TRANSLATESTART, features,
+            ol.interaction.TranslateEventType.TRANSLATESTART, features,
             event.coordinate));
     return true;
   }
@@ -124,7 +126,7 @@ ol.interaction.Translate.handleUpEvent_ = function(event) {
 
     this.dispatchEvent(
         new ol.interaction.Translate.Event(
-            ol.interaction.Translate.EventType.TRANSLATEEND, features,
+            ol.interaction.TranslateEventType.TRANSLATEEND, features,
             event.coordinate));
     return true;
   }
@@ -154,7 +156,7 @@ ol.interaction.Translate.handleDragEvent_ = function(event) {
     this.lastCoordinate_ = newCoordinate;
     this.dispatchEvent(
         new ol.interaction.Translate.Event(
-            ol.interaction.Translate.EventType.TRANSLATING, features,
+            ol.interaction.TranslateEventType.TRANSLATING, features,
             newCoordinate));
   }
 };
@@ -166,23 +168,15 @@ ol.interaction.Translate.handleDragEvent_ = function(event) {
  * @private
  */
 ol.interaction.Translate.handleMoveEvent_ = function(event) {
-  var elem = event.map.getTargetElement();
+  var elem = event.map.getViewport();
 
   // Change the cursor to grab/grabbing if hovering any of the features managed
   // by the interaction
   if (this.featuresAtPixel_(event.pixel, event.map)) {
-    this.previousCursor_ = elem.style.cursor;
-    // WebKit browsers don't support the grab icons without a prefix
-    elem.style.cursor = this.lastCoordinate_ ?
-        '-webkit-grabbing' : '-webkit-grab';
-
-    // Thankfully, attempting to set the standard ones will silently fail,
-    // keeping the prefixed icons
-    elem.style.cursor = this.lastCoordinate_ ?  'grabbing' : 'grab';
+    elem.classList.remove(this.lastCoordinate_ ? 'ol-grab' : 'ol-grabbing');
+    elem.classList.add(this.lastCoordinate_ ? 'ol-grabbing' : 'ol-grab');
   } else {
-    elem.style.cursor = this.previousCursor_ !== undefined ?
-        this.previousCursor_ : '';
-    this.previousCursor_ = undefined;
+    elem.classList.remove('ol-grab', 'ol-grabbing');
   }
 };
 
@@ -233,6 +227,41 @@ ol.interaction.Translate.prototype.setHitTolerance = function(hitTolerance) {
 
 
 /**
+ * @inheritDoc
+ */
+ol.interaction.Translate.prototype.setMap = function(map) {
+  var oldMap = this.getMap();
+  ol.interaction.Pointer.prototype.setMap.call(this, map);
+  this.updateState_(oldMap);
+};
+
+
+/**
+ * @private
+ */
+ol.interaction.Translate.prototype.handleActiveChanged_ = function() {
+  this.updateState_(null);
+};
+
+
+/**
+ * @param {ol.Map} oldMap Old map.
+ * @private
+ */
+ol.interaction.Translate.prototype.updateState_ = function(oldMap) {
+  var map = this.getMap();
+  var active = this.getActive();
+  if (!map || !active) {
+    map = map || oldMap;
+    if (map) {
+      var elem = map.getViewport();
+      elem.classList.remove('ol-grab', 'ol-grabbing');
+    }
+  }
+};
+
+
+/**
  * @classdesc
  * Events emitted by {@link ol.interaction.Translate} instances are instances of
  * this type.
@@ -240,7 +269,7 @@ ol.interaction.Translate.prototype.setHitTolerance = function(hitTolerance) {
  * @constructor
  * @extends {ol.events.Event}
  * @implements {oli.interaction.TranslateEvent}
- * @param {ol.interaction.Translate.EventType} type Type.
+ * @param {ol.interaction.TranslateEventType} type Type.
  * @param {ol.Collection.<ol.Feature>} features The features translated.
  * @param {ol.Coordinate} coordinate The event coordinate.
  */
@@ -264,28 +293,3 @@ ol.interaction.Translate.Event = function(type, features, coordinate) {
   this.coordinate = coordinate;
 };
 ol.inherits(ol.interaction.Translate.Event, ol.events.Event);
-
-
-/**
- * @enum {string}
- */
-ol.interaction.Translate.EventType = {
-  /**
-   * Triggered upon feature translation start.
-   * @event ol.interaction.Translate.Event#translatestart
-   * @api
-   */
-  TRANSLATESTART: 'translatestart',
-  /**
-   * Triggered upon feature translation.
-   * @event ol.interaction.Translate.Event#translating
-   * @api
-   */
-  TRANSLATING: 'translating',
-  /**
-   * Triggered upon feature translation end.
-   * @event ol.interaction.Translate.Event#translateend
-   * @api
-   */
-  TRANSLATEEND: 'translateend'
-};

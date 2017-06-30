@@ -1,6 +1,3 @@
-/* global resemble:false */
-/* eslint-disable openlayers-internal/no-missing-requires */
-
 // FIXME remove afterLoadXml as it uses the wrong XML parser on IE9
 
 // helper functions for async testing and other utility functions.
@@ -392,25 +389,25 @@
     }
 
     resemble(referenceImage)
-      .compareTo(canvas.getContext('2d').getImageData(
-          0, 0, canvas.width, canvas.height))
-      .onComplete(function(data) {
-        if (!data.isSameDimensions) {
-          expect().fail(
-            'The dimensions of the reference image and ' +
+        .compareTo(canvas.getContext('2d').getImageData(
+            0, 0, canvas.width, canvas.height))
+        .onComplete(function(data) {
+          if (!data.isSameDimensions) {
+            expect().fail(
+                'The dimensions of the reference image and ' +
             'the test canvas are not the same.');
-        }
-
-        if (data.misMatchPercentage > tolerance) {
-          if (showDiff) {
-            var diffImage = new Image();
-            diffImage.src = data.getImageDataUrl();
-            document.body.appendChild(diffImage);
           }
-          expect(data.misMatchPercentage).to.be.below(tolerance);
-        }
-        done();
-      });
+
+          if (data.misMatchPercentage > tolerance) {
+            if (showDiff) {
+              var diffImage = new Image();
+              diffImage.src = data.getImageDataUrl();
+              document.body.appendChild(diffImage);
+            }
+            expect(data.misMatchPercentage).to.be.below(tolerance);
+          }
+          done();
+        });
   }
   global.resembleCanvas = resembleCanvas;
 
@@ -460,13 +457,14 @@
       expectResembleWebGL(map, referenceImage, tolerance, done);
     } else {
       expect().fail(
-        'resemble only works with the canvas and WebGL renderer.');
+          'resemble only works with the canvas and WebGL renderer.');
     }
   };
 
   var features = {
-    ArrayBuffer: typeof ArrayBuffer === 'function',
-    'ArrayBuffer.isView': typeof ArrayBuffer === 'function' && ArrayBuffer.isView,
+    ArrayBuffer: 'ArrayBuffer' in global,
+    'ArrayBuffer.isView': 'ArrayBuffer' in global && !!ArrayBuffer.isView,
+    FileReader: 'FileReader' in global,
     Uint8ClampedArray: ('Uint8ClampedArray' in global)
   };
 

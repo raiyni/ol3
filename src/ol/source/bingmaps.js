@@ -19,7 +19,7 @@ goog.require('ol.tilegrid');
  * @constructor
  * @extends {ol.source.TileImage}
  * @param {olx.source.BingMapsOptions} options Bing Maps options.
- * @api stable
+ * @api
  */
 ol.source.BingMaps = function(options) {
 
@@ -116,7 +116,6 @@ ol.source.BingMaps.prototype.getImagerySet = function() {
  * @param {BingMapsImageryMetadataResponse} response Response.
  */
 ol.source.BingMaps.prototype.handleImageryMetadataResponse = function(response) {
-
   if (response.statusCode != 200 ||
       response.statusDescription != 'OK' ||
       response.authenticationResultCode != 'ValidCredentials' ||
@@ -132,14 +131,12 @@ ol.source.BingMaps.prototype.handleImageryMetadataResponse = function(response) 
   }
   //var copyright = response.copyright;  // FIXME do we need to display this?
   var resource = response.resourceSets[0].resources[0];
-  ol.DEBUG && console.assert(resource.imageWidth == resource.imageHeight,
-      'resource has imageWidth equal to imageHeight, i.e. is square');
   var maxZoom = this.maxZoom_ == -1 ? resource.zoomMax : this.maxZoom_;
 
   var sourceProjection = this.getProjection();
   var extent = ol.tilegrid.extentFromProjection(sourceProjection);
   var tileSize = resource.imageWidth == resource.imageHeight ?
-      resource.imageWidth : [resource.imageWidth, resource.imageHeight];
+    resource.imageWidth : [resource.imageWidth, resource.imageHeight];
   var tileGrid = ol.tilegrid.createXYZ({
     extent: extent,
     minZoom: resource.zoomMin,
@@ -157,29 +154,26 @@ ol.source.BingMaps.prototype.handleImageryMetadataResponse = function(response) 
             .replace('{subdomain}', subdomain)
             .replace('{culture}', culture);
         return (
-            /**
-             * @param {ol.TileCoord} tileCoord Tile coordinate.
-             * @param {number} pixelRatio Pixel ratio.
-             * @param {ol.proj.Projection} projection Projection.
-             * @return {string|undefined} Tile URL.
-             */
-            function(tileCoord, pixelRatio, projection) {
-              ol.DEBUG && console.assert(ol.proj.equivalent(
-                  projection, sourceProjection),
-                  'projections are equivalent');
-              if (!tileCoord) {
-                return undefined;
-              } else {
-                ol.tilecoord.createOrUpdate(tileCoord[0], tileCoord[1],
-                    -tileCoord[2] - 1, quadKeyTileCoord);
-                var url = imageUrl;
-                if (hidpi) {
-                  url += '&dpi=d1&device=mobile';
-                }
-                return url.replace('{quadkey}', ol.tilecoord.quadKey(
-                    quadKeyTileCoord));
+          /**
+           * @param {ol.TileCoord} tileCoord Tile coordinate.
+           * @param {number} pixelRatio Pixel ratio.
+           * @param {ol.proj.Projection} projection Projection.
+           * @return {string|undefined} Tile URL.
+           */
+          function(tileCoord, pixelRatio, projection) {
+            if (!tileCoord) {
+              return undefined;
+            } else {
+              ol.tilecoord.createOrUpdate(tileCoord[0], tileCoord[1],
+                  -tileCoord[2] - 1, quadKeyTileCoord);
+              var url = imageUrl;
+              if (hidpi) {
+                url += '&dpi=d1&device=mobile';
               }
-            });
+              return url.replace('{quadkey}', ol.tilecoord.quadKey(
+                  quadKeyTileCoord));
+            }
+          });
       }));
 
   if (resource.imageryProviders) {
@@ -216,5 +210,4 @@ ol.source.BingMaps.prototype.handleImageryMetadataResponse = function(response) 
   this.setLogo(brandLogoUri);
 
   this.setState(ol.source.State.READY);
-
 };

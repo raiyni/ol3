@@ -1,6 +1,5 @@
 goog.provide('ol.control');
 
-goog.require('ol');
 goog.require('ol.Collection');
 goog.require('ol.control.Attribution');
 goog.require('ol.control.Rotate');
@@ -17,7 +16,7 @@ goog.require('ol.control.Zoom');
  *
  * @param {olx.control.DefaultsOptions=} opt_options Defaults options.
  * @return {ol.Collection.<ol.control.Control>} Controls.
- * @api stable
+ * @api
  */
 ol.control.defaults = function(opt_options) {
 
@@ -36,7 +35,7 @@ ol.control.defaults = function(opt_options) {
   }
 
   var attributionControl = options.attribution !== undefined ?
-      options.attribution : true;
+    options.attribution : true;
   if (attributionControl) {
     controls.push(new ol.control.Attribution(options.attributionOptions));
   }

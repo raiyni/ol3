@@ -2,7 +2,7 @@ goog.provide('ol.interaction.Extent');
 
 goog.require('ol');
 goog.require('ol.Feature');
-goog.require('ol.MapBrowserEvent');
+goog.require('ol.MapBrowserEventType');
 goog.require('ol.MapBrowserPointerEvent');
 goog.require('ol.coordinate');
 goog.require('ol.events.Event');
@@ -132,7 +132,7 @@ ol.interaction.Extent.handleEvent_ = function(mapBrowserEvent) {
     return true;
   }
   //display pointer (if not dragging)
-  if (mapBrowserEvent.type == ol.MapBrowserEvent.EventType.POINTERMOVE && !this.handlingDownUpSequence) {
+  if (mapBrowserEvent.type == ol.MapBrowserEventType.POINTERMOVE && !this.handlingDownUpSequence) {
     this.handlePointerMove_(mapBrowserEvent);
   }
   //call pointer to determine up/down/drag
@@ -183,13 +183,13 @@ ol.interaction.Extent.handleDownEvent_ = function(mapBrowserEvent) {
     //snap to edge
     } else if (x !== null) {
       this.pointerHandler_ = ol.interaction.Extent.getEdgeHandler_(
-        getOpposingPoint([x, extent[1]]),
-        getOpposingPoint([x, extent[3]])
+          getOpposingPoint([x, extent[1]]),
+          getOpposingPoint([x, extent[3]])
       );
     } else if (y !== null) {
       this.pointerHandler_ = ol.interaction.Extent.getEdgeHandler_(
-        getOpposingPoint([extent[0], y]),
-        getOpposingPoint([extent[2], y])
+          getOpposingPoint([extent[0], y]),
+          getOpposingPoint([extent[2], y])
       );
     }
   //no snap - new bbox
@@ -327,9 +327,7 @@ ol.interaction.Extent.prototype.snapToVertex_ = function(pixel, map) {
     var vertexPixel = map.getPixelFromCoordinate(vertex);
 
     //if the distance is within tolerance, snap to the segment
-    if (Math.sqrt(ol.coordinate.squaredDistance(pixel, vertexPixel)) <=
-        this.pixelTolerance_) {
-
+    if (ol.coordinate.distance(pixel, vertexPixel) <= this.pixelTolerance_) {
       //test if we should further snap to a vertex
       var pixel1 = map.getPixelFromCoordinate(closestSegment[0]);
       var pixel2 = map.getPixelFromCoordinate(closestSegment[1]);
@@ -339,7 +337,7 @@ ol.interaction.Extent.prototype.snapToVertex_ = function(pixel, map) {
       this.snappedToVertex_ = dist <= this.pixelTolerance_;
       if (this.snappedToVertex_) {
         vertex = squaredDist1 > squaredDist2 ?
-            closestSegment[1] : closestSegment[0];
+          closestSegment[1] : closestSegment[0];
       }
       return vertex;
     }
@@ -451,7 +449,7 @@ ol.interaction.Extent.prototype.setExtent = function(extent) {
  * @extends {ol.events.Event}
  */
 ol.interaction.Extent.Event = function(extent) {
-  ol.events.Event.call(this, ol.interaction.Extent.EventType.EXTENTCHANGED);
+  ol.events.Event.call(this, ol.interaction.Extent.EventType_.EXTENTCHANGED);
 
   /**
    * The current extent.
@@ -465,8 +463,9 @@ ol.inherits(ol.interaction.Extent.Event, ol.events.Event);
 
 /**
  * @enum {string}
+ * @private
  */
-ol.interaction.Extent.EventType = {
+ol.interaction.Extent.EventType_ = {
   /**
    * Triggered after the extent is changed
    * @event ol.interaction.Extent.Event
