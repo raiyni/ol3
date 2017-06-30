@@ -269,6 +269,7 @@ ol.nullFunction = function() {};
  *
  * @param {Object} obj The object to get the unique ID for.
  * @return {number} The unique ID for the object.
+ * @api stable
  */
 ol.getUid = function(obj) {
   return obj.ol_uid ||
