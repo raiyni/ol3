@@ -182,7 +182,6 @@ ol.structs.RBush.prototype.forEachInExtent = function(extent, callback, opt_this
  * @param {Array.<T>} values Values.
  * @param {function(this: S, T): *} callback Callback.
  * @param {S=} opt_this The object to use as `this` in `callback`.
- * @private
  * @return {*} Callback return value.
  * @template S
  * @api
