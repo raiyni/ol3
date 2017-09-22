@@ -14,6 +14,7 @@ goog.require('ol.obj');
  * @see https://github.com/mourner/rbush
  * @struct
  * @template T
+ * @api
  */
 ol.structs.RBush = function(opt_maxEntries) {
 
@@ -37,6 +38,7 @@ ol.structs.RBush = function(opt_maxEntries) {
  * Insert a value into the RBush.
  * @param {ol.Extent} extent Extent.
  * @param {T} value Value.
+ * @api
  */
 ol.structs.RBush.prototype.insert = function(extent, value) {
   /** @type {ol.RBushEntry} */
@@ -57,6 +59,7 @@ ol.structs.RBush.prototype.insert = function(extent, value) {
  * Bulk-insert values into the RBush.
  * @param {Array.<ol.Extent>} extents Extents.
  * @param {Array.<T>} values Values.
+ * @api
  */
 ol.structs.RBush.prototype.load = function(extents, values) {
   var items = new Array(values.length);
@@ -83,6 +86,7 @@ ol.structs.RBush.prototype.load = function(extents, values) {
  * Remove a value from the RBush.
  * @param {T} value Value.
  * @return {boolean} Removed.
+ * @api
  */
 ol.structs.RBush.prototype.remove = function(value) {
   var uid = ol.getUid(value);
@@ -99,6 +103,7 @@ ol.structs.RBush.prototype.remove = function(value) {
  * Update the extent of a value in the RBush.
  * @param {ol.Extent} extent Extent.
  * @param {T} value Value.
+ * @api
  */
 ol.structs.RBush.prototype.update = function(extent, value) {
   var item = this.items_[ol.getUid(value)];
@@ -113,6 +118,7 @@ ol.structs.RBush.prototype.update = function(extent, value) {
 /**
  * Return all values in the RBush.
  * @return {Array.<T>} All.
+ * @api
  */
 ol.structs.RBush.prototype.getAll = function() {
   var items = this.rbush_.all();
@@ -126,6 +132,7 @@ ol.structs.RBush.prototype.getAll = function() {
  * Return all values in the given extent.
  * @param {ol.Extent} extent Extent.
  * @return {Array.<T>} All in extent.
+ * @api
  */
 ol.structs.RBush.prototype.getInExtent = function(extent) {
   /** @type {ol.RBushEntry} */
@@ -150,6 +157,7 @@ ol.structs.RBush.prototype.getInExtent = function(extent) {
  * @param {S=} opt_this The object to use as `this` in `callback`.
  * @return {*} Callback return value.
  * @template S
+ * @api
  */
 ol.structs.RBush.prototype.forEach = function(callback, opt_this) {
   return this.forEach_(this.getAll(), callback, opt_this);
@@ -163,6 +171,7 @@ ol.structs.RBush.prototype.forEach = function(callback, opt_this) {
  * @param {S=} opt_this The object to use as `this` in `callback`.
  * @return {*} Callback return value.
  * @template S
+ * @api
  */
 ol.structs.RBush.prototype.forEachInExtent = function(extent, callback, opt_this) {
   return this.forEach_(this.getInExtent(extent), callback, opt_this);
@@ -176,6 +185,7 @@ ol.structs.RBush.prototype.forEachInExtent = function(extent, callback, opt_this
  * @private
  * @return {*} Callback return value.
  * @template S
+ * @api
  */
 ol.structs.RBush.prototype.forEach_ = function(values, callback, opt_this) {
   var result;
@@ -191,6 +201,7 @@ ol.structs.RBush.prototype.forEach_ = function(values, callback, opt_this) {
 
 /**
  * @return {boolean} Is empty.
+ * @api
  */
 ol.structs.RBush.prototype.isEmpty = function() {
   return ol.obj.isEmpty(this.items_);
@@ -199,6 +210,7 @@ ol.structs.RBush.prototype.isEmpty = function() {
 
 /**
  * Remove all values from the RBush.
+ * @api
  */
 ol.structs.RBush.prototype.clear = function() {
   this.rbush_.clear();
@@ -209,6 +221,7 @@ ol.structs.RBush.prototype.clear = function() {
 /**
  * @param {ol.Extent=} opt_extent Extent.
  * @return {ol.Extent} Extent.
+ * @api
  */
 ol.structs.RBush.prototype.getExtent = function(opt_extent) {
   // FIXME add getExtent() to rbush
@@ -219,10 +232,40 @@ ol.structs.RBush.prototype.getExtent = function(opt_extent) {
 
 /**
  * @param {ol.structs.RBush} rbush R-Tree.
+ * @api
  */
 ol.structs.RBush.prototype.concat = function(rbush) {
   this.rbush_.load(rbush.rbush_.all());
   for (var i in rbush.items_) {
     this.items_[i | 0] = rbush.items_[i | 0];
   }
+};
+
+
+/**
+ * Check if extent has a collision
+ * @api 
+ */
+ol.structs.RBush.prototype.collides = function (extent) {
+  var bbox = {
+    minX: extent[0],
+    minY: extent[1],
+    maxX: extent[2],
+    maxY: extent[3]
+  };
+  return this.rbush_.collides(bbox);
+};
+
+/**
+ * Check if an item is already in the tree
+ * @api 
+ */
+ol.structs.RBush.prototype.inTree = function (value) {
+  var uid = ol.getUid(value);
+  if (uid) {
+    if (this.items_[uid]) {
+      return true;
+    }
+  }
+  return false;
 };
