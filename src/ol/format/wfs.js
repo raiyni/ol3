@@ -461,6 +461,7 @@ ol.format.WFS.writeUpdate_ = function(node, feature, objectStack) {
   var featurePrefix = context['featurePrefix'];
   var featureNS = context['featureNS'];
   var typeName = ol.format.WFS.getTypeName_(featurePrefix, featureType);
+  var geometryName = feature.getGeometryName();
   node.setAttribute('typeName', typeName);
   ol.xml.setAttributeNS(node, ol.format.WFS.XMLNS, 'xmlns:' + featurePrefix,
       featureNS);
@@ -471,7 +472,11 @@ ol.format.WFS.writeUpdate_ = function(node, feature, objectStack) {
     for (var i = 0, ii = keys.length; i < ii; i++) {
       var value = feature.get(keys[i]);
       if (value !== undefined) {
-        values.push({name: keys[i], value: value});
+        var name = keys[i];
+        if (value instanceof ol.geom.Geometry) {
+          name = geometryName;
+        }
+        values.push({name: name, value: value});
       }
     }
     ol.xml.pushSerializeAndPop(/** @type {ol.XmlNodeStackItem} */ (
@@ -688,12 +693,14 @@ ol.format.WFS.writeDuringFilter_ = function(node, filter, objectStack) {
 ol.format.WFS.writeLogicalFilter_ = function(node, filter, objectStack) {
   /** @type {ol.XmlNodeStackItem} */
   var item = {node: node};
-  filter.conditions.forEach(function(condition) {
+  var conditions = filter.conditions;
+  for (var i = 0, ii = conditions.length; i < ii; ++i) {
+    var condition = conditions[i];
     ol.xml.pushSerializeAndPop(item,
         ol.format.WFS.GETFEATURE_SERIALIZERS_,
         ol.xml.makeSimpleNodeFactory(condition.getTagName()),
         [condition], objectStack);
-  });
+  }
 };
 
 

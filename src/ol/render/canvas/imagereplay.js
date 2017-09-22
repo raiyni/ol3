@@ -11,11 +11,12 @@ goog.require('ol.render.canvas.Replay');
  * @param {number} tolerance Tolerance.
  * @param {ol.Extent} maxExtent Maximum extent.
  * @param {number} resolution Resolution.
+ * @param {number} pixelRatio Pixel ratio.
  * @param {boolean} overlaps The replay can have overlapping geometries.
  * @struct
  */
-ol.render.canvas.ImageReplay = function(tolerance, maxExtent, resolution, overlaps) {
-  ol.render.canvas.Replay.call(this, tolerance, maxExtent, resolution, overlaps);
+ol.render.canvas.ImageReplay = function(tolerance, maxExtent, resolution, pixelRatio, overlaps) {
+  ol.render.canvas.Replay.call(this, tolerance, maxExtent, resolution, pixelRatio, overlaps);
 
   /**
    * @private
@@ -131,7 +132,7 @@ ol.render.canvas.ImageReplay.prototype.drawPoint = function(pointGeometry, featu
     // Remaining arguments to DRAW_IMAGE are in alphabetical order
     this.anchorX_, this.anchorY_, this.height_, this.opacity_,
     this.originX_, this.originY_, this.rotateWithView_, this.rotation_,
-    this.scale_, this.snapToPixel_, this.width_
+    this.scale_ * this.pixelRatio, this.snapToPixel_, this.width_
   ]);
   this.hitDetectionInstructions.push([
     ol.render.canvas.Instruction.DRAW_IMAGE, myBegin, myEnd,
@@ -161,7 +162,7 @@ ol.render.canvas.ImageReplay.prototype.drawMultiPoint = function(multiPointGeome
   this.instructions.push([
     ol.render.canvas.Instruction.DRAW_IMAGE, myBegin, myEnd, this.image_,
     // Remaining arguments to DRAW_IMAGE are in alphabetical order
-    this.anchorX_, this.anchorY_, this.height_, this.opacity_,
+    this.anchorX_, this.anchorY_, this.height_, undefined, this.opacity_,
     this.originX_, this.originY_, this.rotateWithView_, this.rotation_,
     this.scale_, this.snapToPixel_, this.width_
   ]);
@@ -169,7 +170,7 @@ ol.render.canvas.ImageReplay.prototype.drawMultiPoint = function(multiPointGeome
     ol.render.canvas.Instruction.DRAW_IMAGE, myBegin, myEnd,
     this.hitDetectionImage_,
     // Remaining arguments to DRAW_IMAGE are in alphabetical order
-    this.anchorX_, this.anchorY_, this.height_, this.opacity_,
+    this.anchorX_, this.anchorY_, this.height_, undefined, this.opacity_,
     this.originX_, this.originY_, this.rotateWithView_, this.rotation_,
     this.scale_, this.snapToPixel_, this.width_
   ]);

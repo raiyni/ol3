@@ -735,6 +735,7 @@ ol.render.canvas.Immediate.prototype.setContextStrokeState_ = function(strokeSta
     context.lineCap = strokeState.lineCap;
     if (ol.has.CANVAS_LINE_DASH) {
       context.setLineDash(strokeState.lineDash);
+      context.lineDashOffset = strokeState.lineDashOffset;
     }
     context.lineJoin = strokeState.lineJoin;
     context.lineWidth = strokeState.lineWidth;
@@ -743,6 +744,7 @@ ol.render.canvas.Immediate.prototype.setContextStrokeState_ = function(strokeSta
     this.contextStrokeState_ = {
       lineCap: strokeState.lineCap,
       lineDash: strokeState.lineDash,
+      lineDashOffset: strokeState.lineDashOffset,
       lineJoin: strokeState.lineJoin,
       lineWidth: strokeState.lineWidth,
       miterLimit: strokeState.miterLimit,
@@ -756,6 +758,10 @@ ol.render.canvas.Immediate.prototype.setContextStrokeState_ = function(strokeSta
       if (!ol.array.equals(
           contextStrokeState.lineDash, strokeState.lineDash)) {
         context.setLineDash(contextStrokeState.lineDash = strokeState.lineDash);
+      }
+      if (contextStrokeState.lineDashOffset != strokeState.lineDashOffset) {
+        contextStrokeState.lineDashOffset = context.lineDashOffset =
+            strokeState.lineDashOffset;
       }
     }
     if (contextStrokeState.lineJoin != strokeState.lineJoin) {
@@ -783,21 +789,23 @@ ol.render.canvas.Immediate.prototype.setContextStrokeState_ = function(strokeSta
 ol.render.canvas.Immediate.prototype.setContextTextState_ = function(textState) {
   var context = this.context_;
   var contextTextState = this.contextTextState_;
+  var textAlign = textState.textAlign ?
+    textState.textAlign : ol.render.canvas.defaultTextAlign;
   if (!contextTextState) {
     context.font = textState.font;
-    context.textAlign = textState.textAlign;
+    context.textAlign = textAlign;
     context.textBaseline = textState.textBaseline;
     this.contextTextState_ = {
       font: textState.font,
-      textAlign: textState.textAlign,
+      textAlign: textAlign,
       textBaseline: textState.textBaseline
     };
   } else {
     if (contextTextState.font != textState.font) {
       contextTextState.font = context.font = textState.font;
     }
-    if (contextTextState.textAlign != textState.textAlign) {
-      contextTextState.textAlign = context.textAlign = textState.textAlign;
+    if (contextTextState.textAlign != textAlign) {
+      contextTextState.textAlign = textAlign;
     }
     if (contextTextState.textBaseline != textState.textBaseline) {
       contextTextState.textBaseline = context.textBaseline =
@@ -880,7 +888,7 @@ ol.render.canvas.Immediate.prototype.setImageStyle = function(imageStyle) {
     this.imageOriginY_ = imageOrigin[1];
     this.imageRotateWithView_ = imageStyle.getRotateWithView();
     this.imageRotation_ = imageStyle.getRotation();
-    this.imageScale_ = imageStyle.getScale();
+    this.imageScale_ = imageStyle.getScale() * this.pixelRatio_;
     this.imageSnapToPixel_ = imageStyle.getSnapToPixel();
     this.imageWidth_ = imageSize[0];
   }
