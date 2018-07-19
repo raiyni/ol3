@@ -18,6 +18,8 @@
     "build-examples": "webpack --config examples/webpack/config.js --mode production",
     "build-package": "npm run transpile && npm run copy-css && node tasks/prepare-package",
     "build-index": "npm run build-package && node tasks/generate-index",
+    "build-full": "npm run build-legacy && npm run build-debug",
+    "build-debug": "npm run build-index && rollup --config config/rollup-debug.js",
     "build-legacy": "rm -rf build && npm run build-index && rollup --config config/rollup.js && cleancss --source-map src/ol/ol.css -o build/ol.css",
     "copy-css": "cp src/ol/ol.css build/ol/ol.css",
     "transpile": "rm -rf build/ol && mkdir -p build && buble --input src/ol --output build/ol --no modules --sourcemap",

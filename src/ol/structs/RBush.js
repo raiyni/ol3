@@ -13,6 +13,7 @@ import {isEmpty} from '../obj.js';
  * @property {number} maxX
  * @property {number} maxY
  * @property {Object} [value]
+ * @api
  */
 
 class RBush {
@@ -23,6 +24,7 @@ class RBush {
    * @param {number=} opt_maxEntries Max entries.
    * @see https://github.com/mourner/rbush
    * @template T
+   * @api
    */
   constructor(opt_maxEntries) {
 
@@ -45,6 +47,7 @@ class RBush {
    * Insert a value into the RBush.
    * @param {module:ol/extent~Extent} extent Extent.
    * @param {T} value Value.
+   * @api
    */
   insert(extent, value) {
     /** @type {module:ol/structs/RBush~Entry} */
@@ -65,6 +68,7 @@ class RBush {
    * Bulk-insert values into the RBush.
    * @param {Array.<module:ol/extent~Extent>} extents Extents.
    * @param {Array.<T>} values Values.
+   * @api
    */
   load(extents, values) {
     const items = new Array(values.length);
@@ -91,6 +95,7 @@ class RBush {
    * Remove a value from the RBush.
    * @param {T} value Value.
    * @return {boolean} Removed.
+   * @api
    */
   remove(value) {
     const uid = getUid(value);
@@ -107,6 +112,7 @@ class RBush {
    * Update the extent of a value in the RBush.
    * @param {module:ol/extent~Extent} extent Extent.
    * @param {T} value Value.
+   * @api
    */
   update(extent, value) {
     const item = this.items_[getUid(value)];
@@ -121,6 +127,7 @@ class RBush {
   /**
    * Return all values in the RBush.
    * @return {Array.<T>} All.
+   * @api
    */
   getAll() {
     const items = this.rbush_.all();
@@ -134,6 +141,7 @@ class RBush {
    * Return all values in the given extent.
    * @param {module:ol/extent~Extent} extent Extent.
    * @return {Array.<T>} All in extent.
+   * @api
    */
   getInExtent(extent) {
     /** @type {module:ol/structs/RBush~Entry} */
@@ -158,6 +166,7 @@ class RBush {
    * @param {S=} opt_this The object to use as `this` in `callback`.
    * @return {*} Callback return value.
    * @template S
+   * @api
    */
   forEach(callback, opt_this) {
     return this.forEach_(this.getAll(), callback, opt_this);
@@ -171,6 +180,7 @@ class RBush {
    * @param {S=} opt_this The object to use as `this` in `callback`.
    * @return {*} Callback return value.
    * @template S
+   * @api
    */
   forEachInExtent(extent, callback, opt_this) {
     return this.forEach_(this.getInExtent(extent), callback, opt_this);
@@ -181,9 +191,9 @@ class RBush {
    * @param {Array.<T>} values Values.
    * @param {function(this: S, T): *} callback Callback.
    * @param {S=} opt_this The object to use as `this` in `callback`.
-   * @private
    * @return {*} Callback return value.
    * @template S
+   * @api
    */
   forEach_(values, callback, opt_this) {
     let result;
@@ -199,6 +209,7 @@ class RBush {
 
   /**
    * @return {boolean} Is empty.
+   * @api
    */
   isEmpty() {
     return isEmpty(this.items_);
@@ -207,6 +218,7 @@ class RBush {
 
   /**
    * Remove all values from the RBush.
+   * @api
    */
   clear() {
     this.rbush_.clear();
@@ -217,6 +229,7 @@ class RBush {
   /**
    * @param {module:ol/extent~Extent=} opt_extent Extent.
    * @return {module:ol/extent~Extent} Extent.
+   * @api
    */
   getExtent(opt_extent) {
     // FIXME add getExtent() to rbush
@@ -227,6 +240,7 @@ class RBush {
 
   /**
    * @param {module:ol/structs/RBush} rbush R-Tree.
+   * @api
    */
   concat(rbush) {
     this.rbush_.load(rbush.rbush_.all());
@@ -235,6 +249,33 @@ class RBush {
     }
   }
 
+  /**
+   * @api
+   */
+  collides(extent) {
+    var bbox = {
+          minX: extent[0],
+          minY: extent[1],
+          maxX: extent[2],
+          maxY: extent[3]
+      };
+
+      return this.rbush_.collides(bbox);
+  }
+
+  /**
+ * Check if an item is already in the tree
+ * @api
+ */
+ inTree(value) {
+    var uid = getUid(value);
+    if (uid) {
+      if (this.items_[uid]) {
+        return true;
+      }
+    }
+    return false;
+  }
 }
 
 
